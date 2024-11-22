@@ -3,14 +3,16 @@
 var isRunning = true;
 
 Console.WriteLine("Welcome to Expense Tracker app");
-Console.WriteLine("Following commands are valid: add, exit, edit, remove, help.");
+Console.WriteLine("Following commands are valid: add, exit, edit, view, remove, help.");
+var expense = new Expense();
 while (isRunning)
-
 {
     var cmd = Console.ReadLine();
     switch (cmd)
     {
         case "add":
+            await expense.AddExpense();
+
             break;
         case "edit":
             break;
