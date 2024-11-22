@@ -12,7 +12,9 @@ while (isRunning)
     {
         case "add":
             await expense.AddExpense();
-
+            break;
+        case "view":
+            await expense.GetExpenses();
             break;
         case "edit":
             break;

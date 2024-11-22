@@ -9,7 +9,12 @@ public class Expense: Config.Store, Config.IIdentifiable
     public string? Description {get; set;}
     public decimal? Amount {get; set;}
     public DateTime Date {get; set;}
-    
+
+    public override string ToString()
+    {
+        return $"id:{this.Id}\nname: {this.Name}\ndescription: {this.Description}\namount: {this.Amount}\ndate: {this.Date}";
+    }
+
     public async Task AddExpense()
     {
         await this.CreateDirectoryIfNotExists();
@@ -33,7 +38,13 @@ public class Expense: Config.Store, Config.IIdentifiable
             Amount = this.Amount,
             Date = this.Date
         };
-        this.NewEntry(newExpense);
+        await this.NewEntry(newExpense);
+    }
 
+    public async Task<string> GetExpenses()
+    {
+        await this.Get<Expense>();
+        
+        return "";
     }
 }

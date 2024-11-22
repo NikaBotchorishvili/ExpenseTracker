@@ -1,12 +1,28 @@
 using System.Text.Json;
 using System.Threading.Tasks;
+using ExpenseTracker.Models;
+
 namespace ExpenseTracker.Config;
 
 public class Store
 {
     private string _fileName = "data.json";
 
+    protected async Task<List<T>> Get<T>() where T: IIdentifiable
+    {
+        string json = await File.ReadAllTextAsync(_fileName);
 
+        var items = JsonSerializer.Deserialize<List<T>>(json)?? new List<T>();
+
+        foreach (var item in items)
+        {
+            Console.WriteLine(item);
+            Console.WriteLine("-------------------");
+        }
+        return items;
+    }
+    
+    
     protected async Task CreateDirectoryIfNotExists()
     {
         try
@@ -17,11 +33,9 @@ public class Store
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            Console.WriteLine(filePath);
+
             if (!File.Exists(filePath))
             {
-                Console.WriteLine("Hello From here");
-
                 Console.WriteLine($"File not found. Initializing {filePath}.");
                 await File.WriteAllTextAsync(filePath, "[]"); // Initialize with an empty JSON array
             }
