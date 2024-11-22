@@ -1,16 +1,14 @@
 using System.Text.Json;
-using System.Threading.Tasks;
-using ExpenseTracker.Models;
-
+ 
 namespace ExpenseTracker.Config;
 
 public class Store
 {
-    private string _fileName = "data.json";
+    protected string fileName { get; set; }
 
     protected async Task<List<T>> Get<T>() where T: IIdentifiable
     {
-        string json = await File.ReadAllTextAsync(_fileName);
+        string json = await File.ReadAllTextAsync(fileName);
 
         var items = JsonSerializer.Deserialize<List<T>>(json)?? new List<T>();
 
@@ -27,7 +25,7 @@ public class Store
     {
         try
         {
-            string filePath = Path.Combine(Environment.CurrentDirectory, _fileName);
+            string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
             string? directoryPath = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             {
@@ -50,10 +48,10 @@ public class Store
     {
         try
         {
-
+            Console.WriteLine("Hello From NewEntry");
             item.Id = Guid.NewGuid().ToString();
             var jsonString = JsonSerializer.Serialize(item);
-            string json = await File.ReadAllTextAsync(this._fileName);
+            string json = await File.ReadAllTextAsync(this.fileName);
             List<T> items;
             if (!string.IsNullOrWhiteSpace(json))
             {
@@ -65,9 +63,8 @@ public class Store
             }
 
             items.Add(item);
-
             string updatedJson = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true});
-            await File.WriteAllTextAsync(_fileName, updatedJson);
+            await File.WriteAllTextAsync(fileName, updatedJson);
             return updatedJson;
         }
         catch (Exception ex)

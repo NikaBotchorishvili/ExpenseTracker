@@ -1,20 +1,55 @@
-﻿using ExpenseTracker.Models;
+﻿using Microsoft.Extensions.DependencyInjection;
+using ExpenseTracker.Repository;
+using ExpenseTracker.Models;
 
+var services = new ServiceCollection();
+services.AddSingleton<ExpenseRepository>();
+var serviceProvider = services.BuildServiceProvider();
+
+var expenseRepository = serviceProvider.GetService<ExpenseRepository>();
 var isRunning = true;
+
+
+if (expenseRepository == null)
+{
+    Console.WriteLine("Expense Service isn't available.");
+    return;
+}
+
 
 Console.WriteLine("Welcome to Expense Tracker app");
 Console.WriteLine("Following commands are valid: add, exit, edit, view, remove, help.");
-var expense = new Expense();
 while (isRunning)
 {
     var cmd = Console.ReadLine();
     switch (cmd)
     {
         case "add":
-            await expense.AddExpense();
+            Console.WriteLine("Enter expense name: ");
+            var name = Console.ReadLine();
+            Console.WriteLine("Enter expense description");
+            var description = Console.ReadLine();
+            var date = DateTime.Now;
+    
+            Console.WriteLine("Enter the expense price.");
+            if (decimal.TryParse(Console.ReadLine(), out var amount))
+            {
+                var expense = new Expense
+                {
+                    Name = name,
+                    Description = description,
+                    Amount = amount,
+                    Date = date
+                };
+                await expenseRepository.AddAsync(expense);
+            }
+            else
+            {
+                Console.WriteLine("Invalid amount");
+            }
             break;
         case "view":
-            await expense.GetExpenses();
+            await expenseRepository.GetAllAsync();
             break;
         case "edit":
             break;
