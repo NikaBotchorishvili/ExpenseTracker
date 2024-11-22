@@ -17,11 +17,30 @@ if (expenseRepository == null)
 }
 
 
-Console.WriteLine("Welcome to Expense Tracker app");
-Console.WriteLine("Following commands are valid: add, exit, edit, view, remove, help.");
+Console.WriteLine("Welcome to Expense Tracker App");
+Console.WriteLine("Following commands are valid: add, exit, edit, view, remove, get {id}, help.");
 while (isRunning)
 {
     var cmd = Console.ReadLine();
+    if (string.IsNullOrEmpty(cmd))
+    {
+        Console.WriteLine("Invalid command. Write help to see possible commands.");
+        continue;
+    }
+    if (cmd.StartsWith("get", StringComparison.OrdinalIgnoreCase))
+    {
+        var parts = cmd.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 2 && Guid.TryParse(parts[1], out var id))
+        { 
+            await expenseRepository.GetByIdAsync(id.ToString());
+        }
+        else
+        {
+            Console.WriteLine("Invalid command format. try: get {id");
+        }
+
+        continue;
+    }
     switch (cmd)
     {
         case "add":
@@ -62,7 +81,7 @@ while (isRunning)
             Console.WriteLine("Commands: add, exit, edit, remove, help.");
             break;
         default:
-            Console.WriteLine("Invalid command. Valid commands are: add, edit, remove, help and exit.");
+            Console.WriteLine("Invalid command. Write help to see possible commands.");
             break;
     }
 }

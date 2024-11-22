@@ -4,19 +4,14 @@ namespace ExpenseTracker.Config;
 
 public class Store
 {
-    protected string fileName { get; set; }
+    protected string FileName { get; set; } = String.Empty;
 
-    protected async Task<List<T>> Get<T>() where T: IIdentifiable
+    protected async Task<List<T>> GetEntries<T>() where T: IIdentifiable
     {
-        string json = await File.ReadAllTextAsync(fileName);
+        string json = await File.ReadAllTextAsync(FileName);
 
         var items = JsonSerializer.Deserialize<List<T>>(json)?? new List<T>();
-
-        foreach (var item in items)
-        {
-            Console.WriteLine(item);
-            Console.WriteLine("-------------------");
-        }
+        
         return items;
     }
     
@@ -25,7 +20,7 @@ public class Store
     {
         try
         {
-            string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
+            string filePath = Path.Combine(Environment.CurrentDirectory, FileName);
             string? directoryPath = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             {
@@ -50,8 +45,8 @@ public class Store
         {
             Console.WriteLine("Hello From NewEntry");
             item.Id = Guid.NewGuid().ToString();
-            var jsonString = JsonSerializer.Serialize(item);
-            string json = await File.ReadAllTextAsync(this.fileName);
+      
+            string json = await File.ReadAllTextAsync(this.FileName);
             List<T> items;
             if (!string.IsNullOrWhiteSpace(json))
             {
@@ -64,12 +59,35 @@ public class Store
 
             items.Add(item);
             string updatedJson = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true});
-            await File.WriteAllTextAsync(fileName, updatedJson);
+            await File.WriteAllTextAsync(FileName, updatedJson);
             return updatedJson;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error While adding an entry:\n{ex.Message}");
+            throw;
+        }
+    }
+
+    protected async Task<T> GetEntryById<T>(string id) where T: IIdentifiable
+    {
+        try
+        {
+            string json = await File.ReadAllTextAsync(FileName);
+
+            var items = JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
+            Console.WriteLine("\n\n\n" + id + "\n\n\n");
+            var entry = items.FirstOrDefault((item) => item.Id == id);
+            if (entry == null)
+            {
+                throw new Exception($"Entry with id {id} not found.");
+            }
+
+            return entry;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while getting an entry:\n{ex.Message}");
             throw;
         }
     }

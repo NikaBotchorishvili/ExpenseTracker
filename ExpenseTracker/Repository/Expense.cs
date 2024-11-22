@@ -8,7 +8,7 @@ public class ExpenseRepository: BaseRepository<Models.Expense>
     
     public ExpenseRepository()
     {
-        this.fileName = "expenses.json";
+        this.FileName = "expenses.json";
     }
     public  string? Id { get; set; }
     public  string? Name {get; set;}
@@ -36,13 +36,21 @@ public class ExpenseRepository: BaseRepository<Models.Expense>
 
     public override async Task<IEnumerable<Expense>> GetAllAsync()
     {
-        var res = await this.Get<Expense>();
+        var res = await this.GetEntries<Expense>();
 
+        foreach (var item in res)
+        {
+            Console.WriteLine(item);
+            Console.WriteLine("-------------------");
+        }
         return res;
     }
 
-    public override Task<Expense?> GetByIdAsync(string id)
+    public override async Task<Expense?> GetByIdAsync(string id)
     {
-        throw new NotImplementedException();
+        var res = await this.GetEntryById<Expense>(id);
+
+        Console.WriteLine(res);
+        return res;
     }
 }
