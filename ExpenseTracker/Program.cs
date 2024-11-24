@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Net.Mime;
+using Microsoft.Extensions.DependencyInjection;
 using ExpenseTracker.Repository;
 using ExpenseTracker.Models;
+using ExpenseTracker.Config;
+
+
 
 var services = new ServiceCollection();
 services.AddSingleton<ExpenseRepository>();
@@ -9,16 +13,15 @@ var serviceProvider = services.BuildServiceProvider();
 var expenseRepository = serviceProvider.GetService<ExpenseRepository>();
 var isRunning = true;
 
-
 if (expenseRepository == null)
 {
     Console.WriteLine("Expense Service isn't available.");
     return;
 }
 
-
 Console.WriteLine("Welcome to Expense Tracker App");
 Console.WriteLine("Following commands are valid: add, exit, edit, view, remove, get {id}, help.");
+
 while (isRunning)
 {
     var cmd = Console.ReadLine();
@@ -26,21 +29,27 @@ while (isRunning)
     {
         Console.WriteLine("Invalid command. Write help to see possible commands.");
         continue;
+        
     }
-    if (cmd.StartsWith("get", StringComparison.OrdinalIgnoreCase))
+    
+    var parts = cmd.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+    if (parts.Length == 2 && Guid.TryParse(parts[1], out var id))
     {
-        var parts = cmd.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 2 && Guid.TryParse(parts[1], out var id))
-        { 
-            await expenseRepository.GetByIdAsync(id.ToString());
-        }
-        else
-        {
-            Console.WriteLine("Invalid command format. try: get {id");
-        }
+        await CommandHandler.HandleCommandAsync(
+            parts[0].ToLower(),
+            id,
+            expenseRepository,
+            expenseRepository.FileName,
+            columns: ["Name", "Description", "Amount"]
+        );
 
         continue;
     }
+    else
+    {
+        Console.WriteLine("Invalid command format. Try: get {id}, delete {id}, or update {id}");
+    }
+
     switch (cmd)
     {
         case "add":

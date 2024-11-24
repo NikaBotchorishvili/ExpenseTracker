@@ -15,7 +15,7 @@ public class ExpenseRepository: BaseRepository<Models.Expense>
     public  string? Description {get; set;}
     public  decimal? Amount {get; set;}
     public DateTime Date {get; set;}
-
+    
     public override async Task AddAsync(Expense entity)
     {
         await this.CreateDirectoryIfNotExists();
@@ -24,14 +24,17 @@ public class ExpenseRepository: BaseRepository<Models.Expense>
      var res = await this.NewEntry(entity);
     }
 
-    public override Task DeleteAsync(string id)
+    public override async Task<List<Expense>> DeleteAsync(string id)
     {
-        throw new NotImplementedException();
+        var res = await this.DeleteEntryById<Expense>(id);
+
+        return res;
     }
 
-    public override Task UpdateAsync(Expense entity)
+    public override async Task UpdateAsync(Expense entity)
     {
-        throw new NotImplementedException();
+        var res = await this.UpdateEntryById<Expense>(entity);
+
     }
 
     public override async Task<IEnumerable<Expense>> GetAllAsync()

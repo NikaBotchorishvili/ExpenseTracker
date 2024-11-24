@@ -4,7 +4,7 @@ namespace ExpenseTracker.Config;
 
 public class Store
 {
-    protected string FileName { get; set; } = String.Empty;
+    public string FileName { get; set; } = String.Empty;
 
     protected async Task<List<T>> GetEntries<T>() where T: IIdentifiable
     {
@@ -43,7 +43,6 @@ public class Store
     {
         try
         {
-            Console.WriteLine("Hello From NewEntry");
             item.Id = Guid.NewGuid().ToString();
       
             string json = await File.ReadAllTextAsync(this.FileName);
@@ -76,7 +75,6 @@ public class Store
             string json = await File.ReadAllTextAsync(FileName);
 
             var items = JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
-            Console.WriteLine("\n\n\n" + id + "\n\n\n");
             var entry = items.FirstOrDefault((item) => item.Id == id);
             if (entry == null)
             {
@@ -90,5 +88,48 @@ public class Store
             Console.WriteLine($"Error while getting an entry:\n{ex.Message}");
             throw;
         }
+    }
+
+    protected async Task<List<T>> DeleteEntryById<T>(string id) where T : IIdentifiable
+    {
+        try
+        {
+            string json = await File.ReadAllTextAsync(FileName);
+            
+            var parsedJson = JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>(); 
+
+            IEnumerable<T> newItems = parsedJson.Where(entry => entry.Id != id);
+            
+            string updatedJson = JsonSerializer.Serialize(newItems, new JsonSerializerOptions { WriteIndented = true});
+            await File.WriteAllTextAsync(FileName, updatedJson);
+            return parsedJson;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while deleting an entry:\n{ex.Message}");
+            throw;
+        }
+    }
+    
+    protected async Task<List<T>> UpdateEntryById<T>(T entry) where T : IIdentifiable
+    {
+        string json = await File.ReadAllTextAsync(this.FileName);
+        var items = JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
+        var index = items.FindIndex(item => item.Id == entry.Id);
+
+        if (index == -1)
+        {
+            throw new Exception($"Entry with id {entry.Id} not found.");
+        }
+        
+        items[index] = entry;
+        
+        string updatedJson = JsonSerializer.Serialize(
+            items, 
+            new JsonSerializerOptions { WriteIndented = true}
+        );
+        await File.WriteAllTextAsync(this.FileName, updatedJson);
+
+        return items;
     }
 }
